@@ -24,6 +24,7 @@
     {
         <li>
             <h3>@entry.Title</h3>
+            <button @onclick="() => Delete(entry)" id="@entry.BlogEntryId">Deleted</button>
             <div class="blog-date">@entry.Time.ToShortDateString()</div>
             <p> @((MarkupString)entry.Content)</p>
         </li>
@@ -48,6 +49,16 @@
 
         blog.AddRange(await ctx.Entries.OrderByDescending(e => e.Time).ToListAsync());
     }
+    private async Task Delete(BlogEntry entry)
+    {
+        using (var ctx = ContextFactory.CreateDbContext())
+        {
+            ctx.Entries.Remove(entry);
+            await ctx.SaveChangesAsync();
+        }
+        blog.Remove(entry);
+    }
+
     private async void AddEntry()
     {
         if (!string.IsNullOrWhiteSpace(title))
