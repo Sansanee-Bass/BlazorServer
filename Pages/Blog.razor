@@ -1,0 +1,73 @@
+@page "/blog"
+@using Models
+@using Microsoft.EntityFrameworkCore
+@* @inject IDbContextFactory<BlogContext> IDbContextFactory *@
+@using Data
+@inject IDbContextFactory<BlogContext> ContextFactory
+@inject UserDataService UserData
+<h1>Blog</h1>
+<h2> Add Entry</h2>
+<div>
+    <input placeholder="Title" @bind="title" />
+</div>
+<div>
+    <textarea placeholder="Content" @bind="content"></textarea>
+</div>
+<div>
+    <button @onclick="AddEntry">Add Blog Entry</button>
+</div>
+<hr />
+
+
+<ul class="blog">
+    @foreach (BlogEntry entry in blog)
+    {
+        <li>
+            <h3>@entry.Title</h3>
+            <div class="blog-date">@entry.Time.ToShortDateString()</div>
+            <p> @((MarkupString)entry.Content)</p>
+        </li>
+    }
+
+</ul>
+@code {
+    private string title, content;
+    private List<BlogEntry> blog = new List<BlogEntry>();
+
+    protected override async Task OnInitializedAsync()
+
+    {
+        UserData.Name = "Bass";
+        UserData.ComponentCount++;
+        using var ctx = ContextFactory.CreateDbContext();
+        /* var e = await ctx.Entries.OrderByDescending(e => e.Time).ToListAsync();
+        foreach( var entry in e) {
+        blog.Add(entry);
+    } */
+
+
+        blog.AddRange(await ctx.Entries.OrderByDescending(e => e.Time).ToListAsync());
+    }
+    private async void AddEntry()
+    {
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            var entry = new BlogEntry { Title = title, Content = content, Time = DateTime.Now };
+            int numChanges = 0;
+            using (var ctx = ContextFactory.CreateDbContext())
+            {
+                ctx.Entries.Add(entry);
+                numChanges = await ctx.SaveChangesAsync();
+            }
+
+            if (numChanges > 0)
+            {
+
+            }
+            blog.Insert(0, entry); // 0 mean last entry will be the first
+
+            title = string.Empty;
+            content = "";
+        }
+    }
+}

@@ -1,0 +1,30 @@
+@page "/counter"
+@using Data
+@inject UserDataService UserData
+
+<h1>Counter</h1>
+<div> @UserData.Name</div>
+<div>@UserData.ComponentCount</div>
+
+<div>
+
+    <p>Current count: @currentCount</p>
+
+</div>
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    protected override void OnInitialized()
+    {
+        UserData.ComponentCount++;
+    }
+
+
+
+    private void IncrementCount()
+    {
+        currentCount += 2;
+    }
+}
